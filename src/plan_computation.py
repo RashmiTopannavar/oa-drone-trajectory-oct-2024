@@ -6,7 +6,6 @@ import numpy as np
 from src.data_model import Camera, DatasetSpec, Waypoint
 from src.camera_utils import compute_image_footprint_on_surface, compute_ground_sampling_distance
 
-
 def compute_distance_between_images(camera: Camera, dataset_spec: DatasetSpec) -> np.ndarray:
     """Compute the distance between images in the horizontal and vertical directions for specified overlap and sidelap.
 
@@ -18,7 +17,14 @@ def compute_distance_between_images(camera: Camera, dataset_spec: DatasetSpec) -
         float: The distance between images in the horizontal direction.
         float: The distance between images in the vertical direction.
     """
-    raise NotImplementedError()
+    footprint_x, footprint_y = compute_image_footprint_on_surface(camera, dataset_spec.height)
+
+    distance_x = footprint_x * (1 - dataset_spec.overlap)
+    distance_y = footprint_y * (1 - dataset_spec.sidelap)
+
+    return np.array([distance_x, distance_y])
+
+
 
 
 def compute_speed_during_photo_capture(camera: Camera, dataset_spec: DatasetSpec, allowed_movement_px: float = 1) -> float:
