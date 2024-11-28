@@ -48,3 +48,6 @@ class Waypoint:
     surface_coord_x2: float
     surface_coord_y1: float
     surface_coord_y2: float
+    
+    z: float
+    speed_m_per_sec: float 
