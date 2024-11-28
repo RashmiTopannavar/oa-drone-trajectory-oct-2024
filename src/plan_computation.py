@@ -39,6 +39,9 @@ def compute_speed_during_photo_capture(camera: Camera, dataset_spec: DatasetSpec
         float: The speed at which the drone should move during photo capture.
     """
     gsd = compute_ground_sampling_distance(camera, dataset_spec.height)
+
+    # This ensures that our drone moves at an appropriate speed to capture clear images
+
     return gsd * allowed_movement_px / (dataset_spec.exposure_time_ms / 1000)
 
 
@@ -56,28 +59,41 @@ def generate_photo_plan_on_grid(camera: Camera, dataset_spec: DatasetSpec) -> T.
     # assumptions made:
     # - only the area to be scanned is covered, no additional surrounding area is covered
 
-    # gives the distance after overlap
+
+
+
+    # This calculates the distance between consecutive images based on the desired overlap and sidelap
     distance_x, distance_y = compute_distance_between_images(camera, dataset_spec)
 
+
+# This calculates how many images are needed to cover the entire scan area, rounding up to ensure full coverage
     num_of_images_x = math.ceil(dataset_spec.scan_dimension_x / distance_x)
     num_of_images_y = math.ceil(dataset_spec.scan_dimension_y / distance_y)
 
+
+# This determines the appropriate speed for the drone to minimize motion blur
     speed = compute_speed_during_photo_capture(camera, dataset_spec)
 
+
+
+# This calculates the area covered by each image and half of these dimensions for later use
     footprint_x, footprint_y = compute_image_footprint_on_surface(
         camera, dataset_spec.height
     )
     dx = footprint_x / 2
     dy = footprint_y / 2
 
+
+# The function uses nested loops to create waypoints in a lawn-mower pattern
     waypoints = []
 
-    for ny in range(num_of_images_y):
+    for ny in range(num_of_images_y): #iterates over rows (y-direction)
         y = ny * distance_y
         surface_coord_y1 = y - dy
         surface_coord_y2 = y + dy
 
-        for nx in range(num_of_images_x):
+        for nx in range(num_of_images_x): #iterates over columns (x-direction)
+            # For even rows, x-coordinates increase; for odd rows, they decrease (creating the back-and-forth pattern)
             if ny % 2 == 0:
                 x = nx * distance_x
             else:
